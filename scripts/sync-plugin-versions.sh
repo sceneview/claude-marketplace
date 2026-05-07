@@ -29,17 +29,15 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-echo -e "${CYAN}=== Bridge plugin ↔ npm version sync ===${NC}"
+echo -e "${CYAN}=== Plugin ↔ npm version sync ===${NC}"
 echo ""
 
 # Mapping: plugin folder | wrapped npm package name
-# Add a new line when shipping a new plugin.
+# This marketplace ships ONE plugin (sceneview). Off-topic personal-portfolio
+# MCPs (french-admin, realestate, ecommerce-3d, architecture, etc.) live in
+# the mcp-tools-lab / sceneview-tools orgs and have their own marketplaces.
 PLUGINS=(
     "sceneview|sceneview-mcp"
-    "realestate-3d|realestate-mcp"
-    "french-admin|french-admin-mcp"
-    "ecommerce-3d|ecommerce-3d-mcp"
-    "architecture-3d|architecture-mcp"
 )
 
 MARKETPLACE_JSON="$REPO_ROOT/.claude-plugin/marketplace.json"
