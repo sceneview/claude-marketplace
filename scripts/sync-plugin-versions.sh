@@ -1,19 +1,18 @@
 #!/usr/bin/env bash
-# sync-plugin-versions.sh — Verify each Claude Code bridge plugin's manifest
+# sync-plugin-versions.sh — Verify each Claude Code plugin's manifest
 # version matches the npm-published version of the MCP it wraps.
 #
-# The 'sceneview' main plugin tracks gradle.properties VERSION_NAME and is
-# already covered by sync-versions.sh (section 7b). This script handles the
-# 4 bridge plugins (realestate-3d, french-admin, ecommerce-3d, architecture-3d)
-# whose versions follow their wrapped npm packages, NOT the SDK version.
+# This marketplace ships ONE plugin (sceneview) per the strict org-scope rule
+# (see memory `feedback_sceneview_org_strict`). The plugin tracks the wrapped
+# `sceneview-mcp` npm package version, NOT the SDK gradle.properties VERSION_NAME.
 #
 # Usage:
-#   bash .claude/scripts/sync-plugin-versions.sh           # report only
-#   bash .claude/scripts/sync-plugin-versions.sh --fix     # auto-bump plugin.json + marketplace.json
+#   bash scripts/sync-plugin-versions.sh           # report only
+#   bash scripts/sync-plugin-versions.sh --fix     # auto-bump plugin.json + marketplace.json
 #
 # Exit codes:
-#   0 = all bridge plugins aligned with their wrapped npm packages
-#   1 = at least one mismatch (or fixed if --fix)
+#   0 = plugin aligned with its wrapped npm package
+#   1 = mismatch (or fixed if --fix)
 #   2 = script error (missing dependencies, network failure, malformed JSON)
 
 set -euo pipefail
