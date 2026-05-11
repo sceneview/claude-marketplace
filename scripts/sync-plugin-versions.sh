@@ -33,8 +33,7 @@ echo ""
 
 # Mapping: plugin folder | wrapped npm package name
 # This marketplace ships ONE plugin (sceneview). Off-topic personal-portfolio
-# MCPs (french-admin, realestate, ecommerce-3d, architecture, etc.) live in
-# the mcp-tools-lab / sceneview-tools orgs and have their own marketplaces.
+# MCPs live in their own orgs and have their own marketplaces — never here.
 PLUGINS=(
     "sceneview|sceneview-mcp"
 )
