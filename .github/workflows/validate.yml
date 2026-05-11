@@ -1,0 +1,45 @@
+name: Validate marketplace + plugins
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: claude plugin validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Validate marketplace manifest
+        run: claude plugin validate .
+
+      - name: Validate sceneview plugin manifest
+        run: claude plugin validate plugins/sceneview
+
+  sync-versions:
+    name: Plugin version ↔ npm sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run sync-plugin-versions.sh
+        run: bash scripts/sync-plugin-versions.sh
+        # Exit code 1 if the plugin manifest drifts from `npm view sceneview-mcp version`.
+        # When this fails, run `bash scripts/sync-plugin-versions.sh --fix` locally,
+        # commit the bumped plugin.json + marketplace.json, and push.
