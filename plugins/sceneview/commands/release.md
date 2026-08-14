@@ -10,51 +10,19 @@ Ask the user: "What version are we releasing? (current: check root gradle.proper
 
 ---
 
-## Step 1: Bump version everywhere (use /version-bump)
+## Step 1: Bump the version
 
-Run `/version-bump X.Y.Z` which updates ALL 30+ version locations at once.
+```
+/version-bump X.Y.Z
+```
 
-If not using /version-bump, manually update:
-
-### Source of truth
-1. `gradle.properties` (root) — `VERSION_NAME=X.Y.Z`
-
-### Android modules (must match root exactly)
-2. `sceneview/gradle.properties` — `VERSION_NAME=`
-3. `arsceneview/gradle.properties` — `VERSION_NAME=`
-4. `sceneview-core/gradle.properties` — `VERSION_NAME=`
-
-### npm packages
-5. `mcp/package.json` — `"version": "X.Y.Z"`
-6. `sceneview-web/package.json` — `"version": "X.Y.Z"`
-7. `react-native/react-native-sceneview/package.json` — `"version": "X.Y.Z"`
-
-### Flutter
-8. `flutter/sceneview_flutter/pubspec.yaml` — `version: X.Y.Z`
-9. `flutter/sceneview_flutter/android/build.gradle` — `version 'X.Y.Z'`
-10. `flutter/sceneview_flutter/ios/sceneview_flutter.podspec` — `s.version = 'X.Y.Z'`
-
-### Documentation
-11. `llms.txt` — all `io.github.sceneview:*:X.Y.Z` artifact references
-12. `README.md` — install snippets
-13. `CLAUDE.md` — code examples section
-14. `docs/docs/index.md` — install snippets
-15. `docs/docs/quickstart.md` — dependency snippets
-16. `docs/docs/llms-full.txt` — artifact versions
-17. `docs/docs/cheatsheet.md` — install snippets
-18. `docs/docs/platforms.md` — install line
-19. `docs/docs/android-xr.md` — install snippets
-
-### Website
-20. `website-static/index.html` — softwareVersion, badge, code snippets
-21. `sceneview.github.io/index.html` — same (deployed website, separate repo)
-
-### Demo apps
-22. `samples/android-demo/build.gradle` — versionName default
-23. `sceneview/Module.md`, `arsceneview/Module.md` — version refs
-
-### MCP source
-24. `mcp/src/index.ts` — version string in server info
+That command sets the root `gradle.properties` and lets `sync-versions.sh --fix`
+derive every other location. This step used to repeat the file list inline as a
+"if not using /version-bump" fallback; the two copies had already drifted apart
+(the fallback was missing `docs/docs/migration.md`, the AR Compose codelab,
+`SceneViewSwift/README.md` and `samples/flutter-demo/pubspec.yaml`), so following
+it shipped a partially-bumped release. There is one list now, and it lives in the
+script.
 
 ## Step 2: Update CHANGELOG.md
 
@@ -82,14 +50,7 @@ cd mcp && npm run prepare && npm test
 
 Verify dist/ files are updated and tests pass.
 
-## Step 4: Update CLAUDE.md session state
-
-Update the "Current state" section with:
-- Date to today
-- Latest release version
-- Summary of what changed
-
-## Step 5: Verify with sync-versions.sh
+## Step 4: Verify with sync-versions.sh
 
 ```bash
 bash .claude/scripts/sync-versions.sh
@@ -97,13 +58,13 @@ bash .claude/scripts/sync-versions.sh
 
 ALL checks must pass. If any mismatch, fix before proceeding.
 
-## Step 6: Run quality gate
+## Step 5: Run quality gate
 
 ```bash
 bash .claude/scripts/quality-gate.sh --quick
 ```
 
-## Step 7: Commit and tag
+## Step 6: Commit and tag
 
 ```bash
 git add -A
@@ -111,7 +72,7 @@ git commit -m "chore: release X.Y.Z"
 git tag vX.Y.Z
 ```
 
-## Step 8: Push
+## Step 7: Push
 
 Ask the user: "Push to main and trigger release workflow?"
 
@@ -126,7 +87,7 @@ This triggers:
 - **app-store.yml**: iOS demo TestFlight upload (if Apple cert is configured)
 - **docs.yml**: Website + docs rebuild and deploy
 
-## Step 9: Verify published artifacts
+## Step 8: Verify published artifacts
 
 Wait 5-10 minutes, then run `/publish-check` to verify all artifacts are live:
 - Maven Central: sceneview, arsceneview, sceneview-core
@@ -134,11 +95,10 @@ Wait 5-10 minutes, then run `/publish-check` to verify all artifacts are live:
 - GitHub Release with APKs attached
 - SPM tag available
 
-## Step 10: Post-release
+## Step 9: Post-release
 
-1. Update the deployed website (sceneview.github.io) if needed
-2. Post to Discord (automatic via webhook)
-3. Notify Thomas about LinkedIn post draft
+Update the deployed website (`sceneview.github.io`) if it carries version
+references. Discord is notified by webhook — nothing to do.
 
 ---
 

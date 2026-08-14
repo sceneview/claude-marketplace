@@ -1,132 +1,64 @@
 ---
-description: Coordinated version update across all 30+ platform-specific files (Android, iOS, Web, Flutter, RN, docs, website).
+description: Bump the SceneView version everywhere, from the single source of truth.
 ---
 
 # /version-bump — Coordinated version update across all platforms
-
-Bump the SceneView version across ALL locations in a single, atomic operation.
 
 **Usage:** `/version-bump 3.6.0` or just `/version-bump` (will ask for version)
 
 ---
 
-## Complete Version Location Map (30+ files)
+## The one thing to know
 
-### Source of truth
-- `gradle.properties` -> `VERSION_NAME=X.Y.Z`
+`gradle.properties` at the repo root is the source of truth. Everything else is
+derived, and `.claude/scripts/sync-versions.sh --fix` derives it — Android modules,
+npm packages and their lockfiles, Flutter pubspec + podspec + build.gradle, the
+Swift Package `from:` clauses, `llms.txt`, `README.md`, `CLAUDE.md`, every
+versioned page under `docs/docs/`, the website, the demo apps, and the AI-assistant
+prompt surfaces (`.cursorrules`, `copilot-instructions.md`, `agents/*/SKILL.md`).
 
-### Android modules (must match root exactly)
-- `sceneview/gradle.properties` -> `VERSION_NAME=`
-- `arsceneview/gradle.properties` -> `VERSION_NAME=`
-- `sceneview-core/gradle.properties` -> `VERSION_NAME=`
-
-### npm packages
-- `mcp/package.json` -> `"version": "X.Y.Z"`
-- `mcp/src/index.ts` -> version string in server info object
-- `sceneview-web/package.json` -> `"version": "X.Y.Z"`
-- `react-native/react-native-sceneview/package.json` -> `"version": "X.Y.Z"`
-
-### Flutter (3 files!)
-- `flutter/sceneview_flutter/pubspec.yaml` -> `version: X.Y.Z`
-- `flutter/sceneview_flutter/android/build.gradle` -> `version 'X.Y.Z'`
-- `flutter/sceneview_flutter/ios/sceneview_flutter.podspec` -> `s.version = 'X.Y.Z'`
-
-### Swift Package (uses git tags, not file version)
-- `SceneViewSwift/` — version is the git tag `vX.Y.Z`
-- `SceneViewSwift/README.md` — SPM version reference
-
-### Documentation (artifact version references)
-- `llms.txt` — `io.github.sceneview:sceneview:X.Y.Z` (multiple occurrences)
-- `README.md` — install snippets
-- `CLAUDE.md` — code examples section (`io.github.sceneview:sceneview:X.Y.Z`)
-- `sceneview/Module.md` — version reference
-- `arsceneview/Module.md` — version reference
-
-### Docs site (MkDocs) — all with Maven artifact refs
-- `docs/docs/index.md` — install snippets, badge
-- `docs/docs/quickstart.md` — dependency snippets
-- `docs/docs/llms-full.txt` — full API ref versions
-- `docs/docs/cheatsheet.md` — install snippets
-- `docs/docs/platforms.md` — install line
-- `docs/docs/migration.md` — "upgrade to" version
-- `docs/docs/android-xr.md` — install snippets
-- `docs/docs/codelabs/codelab-ar-compose.md` — dependency snippets
-
-### Website (sceneview.github.io repo AND website-static/ in this repo)
-- `website-static/index.html` — softwareVersion JSON-LD, hero badge, code snippets
-- Deployed: `../sceneview.github.io/index.html` — same content
-
-### Demo apps
-- `samples/android-demo/build.gradle` — versionName default value
-- `samples/flutter-demo/pubspec.yaml` — version field
-
-### CLAUDE.md session state
-- "Latest release" line in session continuity section
-
----
+Do not hand-edit that list. This command used to carry a prose copy of it, and the
+copy was 29 entries against the script's 55-plus: a contributor who followed it
+shipped a release with `docs/docs/faq.md`, both iOS codelabs, `Package.swift` and
+`.cursorrules` still on the old version. The script is the list.
 
 ## Steps
 
-### 1. Read current version
+### 1. Read the current version
+
 ```bash
 grep '^VERSION_NAME=' gradle.properties | cut -d= -f2
 ```
 
-### 2. Ask for new version (if not provided as argument)
-"Current version is X.Y.Z. What version do you want to bump to?"
+### 2. Ask for the new version (if not given as an argument)
 
-### 3. Update ALL locations
+### 3. Set it at the source, then propagate
 
-Use sed/Edit to update every file listed above. The key patterns to replace:
-
-**Gradle modules:**
 ```bash
-for f in gradle.properties sceneview/gradle.properties arsceneview/gradle.properties sceneview-core/gradle.properties; do
-  sed -i '' "s/^VERSION_NAME=.*/VERSION_NAME=NEW_VERSION/" "$f"
-done
+sed -i '' "s/^VERSION_NAME=.*/VERSION_NAME=X.Y.Z/" gradle.properties
+bash .claude/scripts/sync-versions.sh --fix
 ```
 
-**Maven artifact references in docs:**
-Replace `io.github.sceneview:sceneview:OLD` with `io.github.sceneview:sceneview:NEW` in:
-llms.txt, README.md, CLAUDE.md, all docs/docs/*.md files
+### 4. Verify — the same script, without `--fix`
 
-**npm packages:**
-Update version field in all package.json files
-
-**Flutter:**
-Update pubspec.yaml, android/build.gradle, ios/*.podspec
-
-**Website:**
-Update softwareVersion, hero badge, code snippets in website-static/index.html
-
-### 4. Rebuild MCP dist
-```bash
-cd mcp && npm run prepare
-```
-
-### 5. Run sync-versions.sh
 ```bash
 bash .claude/scripts/sync-versions.sh
 ```
-If any mismatch remains, fix it before proceeding.
 
-### 6. Verify with grep
-```bash
-# Should find NO references to old version in critical files
-grep -rn "OLD_VERSION" gradle.properties */gradle.properties mcp/package.json llms.txt README.md
-# Should find new version in all expected places
-grep -rn "NEW_VERSION" gradle.properties */gradle.properties mcp/package.json llms.txt README.md
-```
+Exit 0 means every location it knows about is aligned. Anything it still reports is
+a location it checks but cannot repair; fix those by hand and say which, so the
+missing `--fix` handler can be added.
 
-### 7. Commit
+## The two things the script deliberately leaves alone
+
+- **`mcp/package.json`** — the MCP server has its own release cycle and is published
+  to npm independently. Bump it only when you are releasing the MCP server.
+- **`sceneview.github.io`** — a separate repository. `website-static/` in this repo
+  is swept; the deployed copy is not. Update it there, or let `docs.yml` redeploy.
+
+### 5. Commit
+
 ```bash
 git add -A
 git commit -m "chore: bump version to X.Y.Z"
 ```
-
-### 8. Remind about website
-"Don't forget to update the website (sceneview.github.io) if there are version references there."
-
----
-
-**NEVER bump version in only one file. The whole point of this command is atomic, everywhere-at-once updates.**

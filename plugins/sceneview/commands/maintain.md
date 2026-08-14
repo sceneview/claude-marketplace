@@ -44,16 +44,22 @@ If mismatches found:
 bash .claude/scripts/sync-versions.sh --fix
 ```
 
-This covers ALL 30+ version locations across Android, npm, Flutter, docs, website, and samples.
+The script is the list of locations; it sweeps 55-plus across Android, npm, Flutter,
+docs, website, samples and the AI-assistant prompt surfaces.
 
 ## 3. Issue triage
 
 - List open issues: `gh issue list --limit 30`
-- For each unlabelled issue: add the correct label (`bug`, `enhancement`, `question`, `good first issue`, `wontfix`).
-- For issues with a clear fix: implement the fix, commit to main.
-- For questions: answer directly in the issue comment.
-- For issues open > 30 days with no activity: add a `stale` label.
-- Close issues that are duplicates or already fixed.
+- Propose a label for each unlabelled issue (`bug`, `enhancement`, `question`,
+  `good first issue`, `wontfix`).
+- For issues with a clear fix: open a PR against a branch.
+- For questions: draft the answer and show it.
+- Flag issues open > 30 days with no activity, and duplicates or already-fixed ones.
+
+Everything in this section writes to a public repository under the maintainer's
+name. Draft it, show it, let them post it — this command used to say "implement the
+fix, commit to main" and "answer directly in the issue comment", which is a stranger's
+plugin pushing to your default branch and speaking as you.
 
 ## 4. Dependency updates
 
@@ -167,7 +173,3 @@ Print a status table:
 | Flutter/RN bridges | OK/WARN | ... |
 | Website | OK/FAIL | ... |
 | Release needed? | YES/NO | ... |
-
----
-
-**Tone:** be direct, act autonomously, don't ask for confirmation on routine tasks. Only pause and ask when a decision has significant risk (e.g., breaking API change, major version bump).

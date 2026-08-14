@@ -12,29 +12,15 @@ Run this **before every PR**, at the **end of every session**, and whenever the 
 
 ## 1. Published packages vs local (MOST CRITICAL)
 
-Check what's actually published and available to developers RIGHT NOW:
-
-```bash
-# Maven Central — what devs actually get with implementation("io.github.sceneview:sceneview:X.Y.Z")
-for artifact in sceneview arsceneview sceneview-core; do
-  V=$(curl -s "https://search.maven.org/solrsearch/select?q=g:io.github.sceneview+AND+a:$artifact&rows=1&wt=json" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['response']['docs'][0]['latestVersion'] if d['response']['docs'] else 'NOT FOUND')" 2>/dev/null)
-  echo "  Maven $artifact: $V"
-done
-
-# npm — what devs get with npx sceneview-mcp
-curl -s "https://registry.npmjs.org/sceneview-mcp/latest" | python3 -c "import sys,json; print('  npm sceneview-mcp:', json.load(sys.stdin).get('version','NOT FOUND'))"
-
-# npm sceneview-web
-curl -s "https://registry.npmjs.org/@sceneview/sceneview-web/latest" | python3 -c "import sys,json; print('  npm sceneview-web:', json.load(sys.stdin).get('version','NOT FOUND'))" 2>/dev/null || echo "  npm sceneview-web: NOT FOUND"
-
-# GitHub tags — what SPM users get
-git tag -l 'v*' | sort -V | tail -1
+```
+/publish-check
 ```
 
-Compare each published version with the local VERSION_NAME. If they don't match:
-- **ALERT**: "Version X.Y.Z is NOT published. Developers cannot install it."
-- Check if a release workflow ran: `gh run list --workflow=release.yml --limit 3`
-- Check if it succeeded or failed
+Local file versions mean nothing if the packages aren't published. `/publish-check`
+queries Maven Central, both npm packages, the git tags and the live site, and prints
+the published-vs-local table. This section used to carry its own copy of those same
+curl commands; two copies of one check drift, and the one you didn't update is the
+one you read.
 
 **This check is a hard blocker. Do NOT skip it.**
 
@@ -44,26 +30,11 @@ Compare each published version with the local VERSION_NAME. If they don't match:
 bash .claude/scripts/sync-versions.sh
 ```
 
-This checks ALL 30+ version locations:
-- `gradle.properties` (root — source of truth)
-- `sceneview/gradle.properties`, `arsceneview/gradle.properties`, `sceneview-core/gradle.properties`
-- `mcp/package.json`
-- `sceneview-web/package.json`
-- `react-native/react-native-sceneview/package.json`
-- `flutter/sceneview_flutter/pubspec.yaml`
-- `flutter/sceneview_flutter/android/build.gradle`
-- `flutter/sceneview_flutter/ios/sceneview_flutter.podspec`
-- `llms.txt`
-- `CLAUDE.md` code examples
-- `README.md` install snippets
-- `CHANGELOG.md` latest entry
-- `sceneview/Module.md`, `arsceneview/Module.md`
-- `docs/docs/index.md`, `docs/docs/quickstart.md`, `docs/docs/llms-full.txt`
-- `docs/docs/cheatsheet.md`, `docs/docs/platforms.md`
-- `website-static/index.html` (softwareVersion + badge + code snippets)
-- `sceneview.github.io/index.html` (deployed website)
-- `samples/android-demo/build.gradle` versionName
-- `mcp/src/index.ts` and `mcp/dist/index.js` version strings
+Exit 0 means every location it knows about is aligned. The script is the list of
+locations — this section used to enumerate 22 of them in prose, which was both
+incomplete (the script sweeps 55-plus, including `.cursorrules`, `Package.swift`,
+`docs/docs/faq.md` and the iOS codelabs) and free to drift, since nothing checks a
+comment against the code it describes.
 
 Report any mismatches with: file, current value, expected value.
 
@@ -113,32 +84,26 @@ Report which node types exist on Android but not iOS/Web, and vice versa.
 - Is the site accessible? `curl -s -o /dev/null -w "%{http_code}" https://sceneview.github.io/`
 - Do the versions on the live site match the current version?
 
-## 9. CLAUDE.md freshness
-
-- Is the "Active branch" correct? (compare with `git branch --show-current`)
-- Is the "last updated" date today or recent?
-- Does the "Current state" summary match reality?
-
-## 10. Build artifacts check
+## 9. Build artifacts check
 
 - Are there any tracked build artifacts? `git ls-files -- '*.o' '*.pcm' '*.swiftmodule' '*.class' 'build.db'`
 - Are `SceneViewSwift/.build/`, `docs/.cache/`, `docs/site/` in `.gitignore`?
 
-## 11. Stale branches
+## 10. Stale branches
 
 ```bash
 git branch -a --no-merged main
 ```
 Flag any branches older than 7 days that haven't been merged.
 
-## 12. Stale worktrees
+## 11. Stale worktrees
 
 ```bash
 ls -la .claude/worktrees/ 2>/dev/null | wc -l
 ```
 If more than 5 worktrees, suggest cleanup.
 
-## 13. Summary
+## 12. Summary
 
 Print a table:
 
@@ -158,7 +123,6 @@ Print a table:
 | llms.txt iOS | OK/FAIL | ... |
 | llms.txt Android | OK/FAIL | ... |
 | Docs site deployed | OK/FAIL | ... |
-| CLAUDE.md | OK/FAIL | ... |
 | No build artifacts | OK/FAIL | ... |
 | No stale branches | OK/FAIL | ... |
 

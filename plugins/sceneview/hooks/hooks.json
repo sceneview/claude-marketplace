@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r '.tool_input.file_path' | grep -qE '/gradle\\.properties$' && echo 'SceneView: gradle.properties edited — run sync-versions.sh to keep all 30+ version locations aligned (root + module gradle.properties, mcp/package.json, llms.txt, README.md, sceneview-web/package.json, flutter pubspec+podspec, docs).' || true"
+            "command": "jq -r '.tool_input.file_path' | grep -qE '/gradle\\.properties$' && echo 'SceneView: gradle.properties edited — run .claude/scripts/sync-versions.sh --fix to propagate to every derived version location.' || true"
           },
           {
             "type": "command",

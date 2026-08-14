@@ -63,12 +63,3 @@ If the gate BLOCKS:
 If warnings only:
 - Review each warning
 - Push if warnings are intentional/expected
-
-## Automated usage
-
-This can also be used as a pre-push hook. To install:
-```bash
-echo '#!/bin/bash
-bash .claude/scripts/quality-gate.sh --quick' > .git/hooks/pre-push
-chmod +x .git/hooks/pre-push
-```
