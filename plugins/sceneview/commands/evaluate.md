@@ -37,11 +37,14 @@ Evaluate the current work as an independent quality assessor. You are NOT the ge
 
 1. Run `git diff main...HEAD --stat` to see all changes
 2. Run `./gradlew build` to verify compilation
-3. Run the tests CI gates on: `./gradlew :sceneview:testDebugUnitTest :arsceneview:testDebugUnitTest`
-   This step used to name only `:sceneview-core:jsTest :sceneview-web:jsTest` and call
-   them "all tests". Those two are the informational corner of the suite; the Android
-   unit tests are the pass/fail signal. Scoring Correctness 5/5 off the JS tasks alone
-   means scoring an Android SDK without running an Android test.
+3. Run the tests: `./gradlew :sceneview-core:jsTest :sceneview-web:jsTest :sceneview:testDebugUnitTest :arsceneview:testDebugUnitTest`
+   This step used to name only the two `jsTest` tasks and call them "all tests". They
+   are the ones CI runs on every push, but they leave 151 Android unit-test files
+   (`sceneview/src/test`, `arsceneview/src/test`) untouched. CI's own Android gate is
+   `:sceneview:connectedDebugAndroidTest`, which needs a device an evaluator will not
+   have — so those unit tests are the only Android signal available here, and scoring
+   Correctness off the JS tasks alone means scoring an Android SDK without running an
+   Android test.
 4. Read each changed file and score against criteria
 5. If ANY criterion scores 1 or 2: flag as BLOCKING
 6. Produce a structured report with scores and actionable fixes

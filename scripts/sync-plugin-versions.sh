@@ -2,9 +2,10 @@
 # sync-plugin-versions.sh — Verify each Claude Code plugin's manifest
 # version matches the npm-published version of the MCP it wraps.
 #
-# This marketplace ships ONE plugin (sceneview) per the strict org-scope rule
-# (see memory `feedback_sceneview_org_strict`). The plugin tracks the wrapped
-# `sceneview-mcp` npm package version, NOT the SDK gradle.properties VERSION_NAME.
+# This marketplace ships ONE plugin (sceneview): the org publishes only what it
+# maintains, so nothing unrelated to SceneView belongs here. The plugin tracks the
+# wrapped `sceneview-mcp` npm package version, NOT the SDK gradle.properties
+# VERSION_NAME.
 #
 # Usage:
 #   bash scripts/sync-plugin-versions.sh           # report only
