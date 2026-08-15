@@ -2,9 +2,10 @@
 # sync-plugin-versions.sh — Verify each Claude Code plugin's manifest
 # version matches the npm-published version of the MCP it wraps.
 #
-# This marketplace ships ONE plugin (sceneview) per the strict org-scope rule
-# (see memory `feedback_sceneview_org_strict`). The plugin tracks the wrapped
-# `sceneview-mcp` npm package version, NOT the SDK gradle.properties VERSION_NAME.
+# This marketplace ships ONE plugin (sceneview): the org publishes only what it
+# maintains, so nothing unrelated to SceneView belongs here. The plugin tracks the
+# wrapped `sceneview-mcp` npm package version, NOT the SDK gradle.properties
+# VERSION_NAME.
 #
 # Usage:
 #   bash scripts/sync-plugin-versions.sh           # report only
@@ -68,21 +69,36 @@ for entry in "${PLUGINS[@]}"; do
         echo -e "${label}plugin=$plugin_version  marketplace=$marketplace_version  npm=$npm_version  ${RED}MISMATCH${NC}"
 
         if [ "$FIX_MODE" = "--fix" ]; then
+            # Textual substitution, not a json.dumps round-trip. The round-trip
+            # rewrote the whole file for a five-character bump: it escaped the
+            # em-dash to — and exploded the one-line `tags` array over
+            # eleven lines. CI tells everyone to run --fix and commit the
+            # result, and a fix that dirties the diff is a fix people stop
+            # running. The JSON is parsed afterwards to prove the value landed.
             python3 - <<EOF
-import json, pathlib
-pj = pathlib.Path("$plugin_json")
-data = json.loads(pj.read_text())
-data["version"] = "$npm_version"
-pj.write_text(json.dumps(data, indent=2) + "\n")
-print(f"  fixed: {pj.relative_to('$REPO_ROOT')} -> $npm_version")
+import json, pathlib, re, sys
 
-mj = pathlib.Path("$MARKETPLACE_JSON")
-m = json.loads(mj.read_text())
-for p in m["plugins"]:
-    if p["name"] == "$plugin_dir":
-        p["version"] = "$npm_version"
-mj.write_text(json.dumps(m, indent=2) + "\n")
-print(f"  fixed: marketplace.json plugins[$plugin_dir].version -> $npm_version")
+def bump(path, pattern, label):
+    p = pathlib.Path(path)
+    src = p.read_text()
+    new, n = re.subn(pattern, lambda m: m.group(1) + "$npm_version" + m.group(3), src, count=1)
+    if n != 1:
+        sys.exit(f"  ERROR: no version field found in {label} — fix it by hand")
+    p.write_text(new)
+    print(f"  fixed: {label} -> $npm_version")
+
+bump("$plugin_json", r'("version"\s*:\s*")([^"]+)(")', "$plugin_dir/.claude-plugin/plugin.json")
+# Anchored on "source", not on "name": marketplace.json ALSO carries a
+# top-level "name": "$plugin_dir" followed by metadata.version, so anchoring on
+# the name would bump the marketplace's own version instead of the plugin's.
+bump("$MARKETPLACE_JSON",
+     r'("source"\s*:\s*"\./plugins/$plugin_dir"(?:.|\n)*?"version"\s*:\s*")([^"]+)(")',
+     "marketplace.json plugins[$plugin_dir].version")
+
+# Read back: did the substitution land on the key we meant?
+assert json.loads(pathlib.Path("$plugin_json").read_text())["version"] == "$npm_version"
+m = json.loads(pathlib.Path("$MARKETPLACE_JSON").read_text())
+assert [x for x in m["plugins"] if x["name"] == "$plugin_dir"][0]["version"] == "$npm_version"
 EOF
         fi
     fi

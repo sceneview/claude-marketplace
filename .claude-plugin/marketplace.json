@@ -13,7 +13,7 @@
       "name": "sceneview",
       "source": "./plugins/sceneview",
       "description": "Toolkit for building 3D and AR apps with SceneView (Android, iOS, Web). Bundles the sceneview-mcp server + 11 contributor commands.",
-      "version": "4.0.11",
+      "version": "4.0.16",
       "category": "development",
       "tags": ["3d", "ar", "android", "ios", "web", "filament", "realitykit", "jetpack-compose", "swiftui"]
     }

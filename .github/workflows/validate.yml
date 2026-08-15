@@ -5,6 +5,13 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  # The sync-versions job compares this repo against npm. npm is the side that
+  # moves; this repo can sit still for months. Without a time trigger the check
+  # structurally cannot observe the drift it exists to catch — last run was
+  # 2026-05-11, by which point the published package had gained five versions
+  # (4.0.11 here vs 4.0.16 on npm) without anything ever turning red.
+  schedule:
+    - cron: "17 6 * * 1"
 
 jobs:
   validate:
