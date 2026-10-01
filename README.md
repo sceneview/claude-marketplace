@@ -1,6 +1,12 @@
 # SceneView Claude Code marketplace
 
-A [Claude Code](https://www.anthropic.com/claude-code) plugin marketplace for [SceneView](https://github.com/sceneview/sceneview) — the cross-platform 3D & AR SDK for Android (Jetpack Compose), iOS / macOS / visionOS (SwiftUI), and Web (Kotlin/JS).
+A [Claude Code](https://code.claude.com/docs/en/plugins) plugin marketplace for
+[SceneView](https://github.com/sceneview/sceneview), the open-source 3D & AR SDK for Android
+(Jetpack Compose), iOS / macOS / visionOS (SwiftUI) and the web.
+
+SceneView supports every AI assistant at the same level; this repository is the Claude Code
+packaging. The equivalent setup for Codex, Gemini CLI, Cursor, Copilot and others is on
+[AI-assisted development](https://sceneview.github.io/docs/ai-development/).
 
 ## Install
 
@@ -9,34 +15,39 @@ A [Claude Code](https://www.anthropic.com/claude-code) plugin marketplace for [S
 /plugin install sceneview@sceneview
 ```
 
-## Plugin
+## Plugins
 
-| Plugin | Wraps | License |
+| Plugin | For | Contents |
 |---|---|---|
-| `sceneview` | [`sceneview-mcp`](https://www.npmjs.com/package/sceneview-mcp) — 28 tools, full SceneView API reference, code validator. Ships with 11 contributor commands and cross-platform reminder hooks. | Apache-2.0 |
+| [`sceneview`](plugins/sceneview) | Anyone building an app with SceneView | The three SceneView skills (`sceneview`, `sceneview-ios`, `sceneview-web`) and the [`sceneview-mcp`](https://www.npmjs.com/package/sceneview-mcp) server |
+| [`sceneview-contrib`](plugins/sceneview-contrib) | Contributors to the SDK repository | Maintainer commands (review, test, version bump, release) and cross-platform parity reminder hooks |
 
 ## How this marketplace is structured
 
-This repo is **only** the Claude Code plugin manifest. The actual MCP server code lives on npm — the plugin's `.mcp.json` references its package via `npx`, so `/plugin install` does not vendor or clone the MCP source. The marketplace clone is small and fast.
+The MCP server is not vendored: the plugin's `.mcp.json` runs the npm package through `npx`.
+The skills are copies of [`agents/`](https://github.com/sceneview/sceneview/tree/main/agents) in
+the SDK repository, the same source the Codex plugin reads.
 
-The SceneView SDK itself (Android, iOS, Web, Flutter, RN) is at [github.com/sceneview/sceneview](https://github.com/sceneview/sceneview).
+## Keeping it in sync
 
-## Versioning
-
-The plugin tracks the wrapped npm `sceneview-mcp` version. When `npm view sceneview-mcp version` ticks up, bump the plugin manifest:
+The `sceneview` plugin version tracks the `sceneview-mcp` npm version, and its skills track
+`agents/` on the SDK's `main` branch:
 
 ```bash
 bash scripts/sync-plugin-versions.sh         # report
-bash scripts/sync-plugin-versions.sh --fix   # auto-bump plugin.json + marketplace.json
+bash scripts/sync-plugin-versions.sh --fix   # bump the versions and refresh the skill copies
 ```
+
+CI runs the report on every push and weekly.
 
 ## Validate
 
 ```bash
-claude plugin validate .                          # marketplace
-claude plugin validate plugins/sceneview          # the plugin
+claude plugin validate .
+claude plugin validate plugins/sceneview
+claude plugin validate plugins/sceneview-contrib
 ```
 
 ## License
 
-Apache-2.0 (see [`LICENSE`](LICENSE)). The plugin bundles the `sceneview-mcp` package which is itself MIT-licensed (verified via `npm view sceneview-mcp license`).
+Apache-2.0 (see [`LICENSE`](LICENSE)). The `sceneview-mcp` npm package is MIT.

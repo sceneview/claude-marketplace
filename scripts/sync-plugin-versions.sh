@@ -10,9 +10,13 @@
 # Usage:
 #   bash scripts/sync-plugin-versions.sh           # report only
 #   bash scripts/sync-plugin-versions.sh --fix     # auto-bump plugin.json + marketplace.json
+#                                                  # and refresh the skill copies
+#
+# It also checks plugins/sceneview/skills/ against agents/ in sceneview/sceneview.
+# The sceneview-contrib plugin wraps no npm package and is versioned by hand.
 #
 # Exit codes:
-#   0 = plugin aligned with its wrapped npm package
+#   0 = plugin aligned with its wrapped npm package and skill sources
 #   1 = mismatch (or fixed if --fix)
 #   2 = script error (missing dependencies, network failure, malformed JSON)
 
@@ -104,9 +108,53 @@ EOF
     fi
 done
 
+# --- Skills ↔ sceneview/sceneview agents/ -----------------------------------
+# The sceneview plugin ships copies of the three skills that live in agents/ of
+# the SDK repo (the same source the Codex plugin reads). The copy is compared
+# file by file against the SDK's main branch; --fix refreshes it. Set
+# SCENEVIEW_SRC to a local checkout to compare against that instead of GitHub.
+echo ""
+echo -e "${CYAN}=== Skills ↔ sceneview/sceneview agents/ ===${NC}"
+SKILLS=(sceneview sceneview-ios sceneview-web)
+SKILLS_DIR="$REPO_ROOT/plugins/sceneview/skills"
+SRC="${SCENEVIEW_SRC:-}"
+TMP_SRC=""
+if [ -z "$SRC" ]; then
+    TMP_SRC="$(mktemp -d)"
+    trap 'rm -rf "$TMP_SRC"' EXIT
+    if git clone -q --depth 1 --filter=blob:none --sparse \
+            https://github.com/sceneview/sceneview.git "$TMP_SRC/sv" 2>/dev/null \
+        && git -C "$TMP_SRC/sv" sparse-checkout set agents 2>/dev/null; then
+        SRC="$TMP_SRC/sv"
+    fi
+fi
+if [ -z "$SRC" ] || [ ! -d "$SRC/agents" ]; then
+    echo -e "  ${YELLOW}SKIP${NC}  could not fetch sceneview/sceneview agents/ (network?)"
+else
+    for skill in "${SKILLS[@]}"; do
+        label=$(printf '  %-18s' "$skill")
+        # SKILL.md + references/ only: agents/<skill>/agents/openai.yaml is
+        # Codex display metadata and does not belong in a Claude Code plugin.
+        if diff -rq "$SRC/agents/$skill/SKILL.md" "$SKILLS_DIR/$skill/SKILL.md" >/dev/null 2>&1 \
+            && diff -rq "$SRC/agents/$skill/references" "$SKILLS_DIR/$skill/references" >/dev/null 2>&1; then
+            echo -e "${label}${GREEN}OK${NC}"
+        else
+            ERRORS=$((ERRORS + 1))
+            echo -e "${label}${RED}DRIFT${NC} from agents/$skill"
+            if [ "$FIX_MODE" = "--fix" ]; then
+                rm -rf "${SKILLS_DIR:?}/$skill"
+                mkdir -p "$SKILLS_DIR/$skill"
+                cp "$SRC/agents/$skill/SKILL.md" "$SKILLS_DIR/$skill/"
+                cp -R "$SRC/agents/$skill/references" "$SKILLS_DIR/$skill/"
+                echo "  fixed: plugins/sceneview/skills/$skill refreshed"
+            fi
+        fi
+    done
+fi
+
 echo ""
 if [ $ERRORS -eq 0 ]; then
-    echo -e "${GREEN}All bridge plugins aligned with their wrapped npm packages${NC}"
+    echo -e "${GREEN}All bridge plugins aligned with their wrapped npm packages and skill sources${NC}"
     exit 0
 else
     if [ "$FIX_MODE" = "--fix" ]; then

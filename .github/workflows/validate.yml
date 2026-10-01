@@ -34,8 +34,11 @@ jobs:
       - name: Validate sceneview plugin manifest
         run: claude plugin validate plugins/sceneview
 
+      - name: Validate sceneview-contrib plugin manifest
+        run: claude plugin validate plugins/sceneview-contrib
+
   sync-versions:
-    name: Plugin version ↔ npm sync
+    name: Plugin version ↔ npm, skills ↔ SDK agents/
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
