@@ -1,54 +1,56 @@
 # SceneView plugin for Claude Code
 
-Toolkit for building 3D and AR apps with [SceneView](https://github.com/sceneview/sceneview) — the cross-platform 3D & AR SDK for Android (Jetpack Compose), iOS / macOS / visionOS (SwiftUI), and Web.
+Build 3D and AR apps with [SceneView](https://github.com/sceneview/sceneview), the open-source
+3D & AR SDK for Android (Jetpack Compose), iOS / macOS / visionOS (SwiftUI) and the web.
+
+This plugin carries the same three skills and the same MCP server that SceneView ships for every
+other assistant (Codex, Gemini CLI, Cursor, Copilot and others): see
+[AI-assisted development](https://sceneview.github.io/docs/ai-development/) for the equivalent setup
+in each tool.
 
 ## What you get
 
-- **MCP server** (`sceneview-mcp`) — gives Claude the full SceneView API reference, code generation tools, model search, and project analysis. So when you ask Claude to *"build me an AR floorplan viewer"* it produces correct, compilable code on the first try.
-- **11 contributor commands** — `/sceneview:contribute`, `/sceneview:review`, `/sceneview:test`, `/sceneview:document`, `/sceneview:quality-gate`, `/sceneview:publish-check`, `/sceneview:sync-check`, `/sceneview:version-bump`, `/sceneview:release`, `/sceneview:evaluate`, `/sceneview:maintain`. These automate the full contribution workflow: pre-PR checks, multi-platform sync, releases.
+- **Three skills**, loaded when the task matches:
+  - `sceneview`: Android, Jetpack Compose + Filament + ARCore (also covers Flutter and React Native)
+  - `sceneview-ios`: SwiftUI + RealityKit on iOS, macOS and visionOS (SceneViewSwift)
+  - `sceneview-web`: Filament.js (WebGL2/WASM) + WebXR in the browser
+
+  Each one carries the API contract, compilable recipes, a cheatsheet and a migration guide.
+- **The `sceneview-mcp` server**, started automatically: compilable samples, platform setup
+  guides, a code validator, node references and 3D model search.
 
 ## Install
 
 ```
-/plugin marketplace add sceneview/sceneview
+/plugin marketplace add sceneview/claude-marketplace
 /plugin install sceneview@sceneview
 ```
 
-The MCP server starts automatically. To use the contributor commands, run any `/sceneview:*` skill.
+Then ask for what you want to build, for example *"a Compose screen that loads a .glb with an
+orbit camera"* or *"place this model on a detected plane with ARCore"*.
 
-> **Tip — namespace conflicts:** Two of the bundled commands (`review`, `test`) share names with built-in Claude Code skills. After installing the plugin, **always use the prefixed form** `/sceneview:review` and `/sceneview:test` to disambiguate. The other 9 commands have unique names but the prefix still works.
+## Where the skills come from
 
-## Use cases
+The skills are copied from [`agents/`](https://github.com/sceneview/sceneview/tree/main/agents)
+in the SDK repository, the single source the Codex plugin also reads. `scripts/sync-plugin-versions.sh` in this marketplace reports any drift and
+`--fix` refreshes the copies.
 
-### Building an app with SceneView
+## Contributing to SceneView itself?
 
-Just ask Claude. The plugin's MCP server gives Claude the full SDK reference so it can:
-- Generate `SceneView { }` and `ARSceneView { }` composables with the right node types, materials, animations, and lighting setups
-- Search 3D models on Sketchfab, Poly Pizza, and the SceneView Asset CDN
-- Analyze your project to suggest the right SceneView APIs for your use case
-- Debug AR sessions via the Rerun.io bridge
+The maintainer commands (`/release`, `/version-bump`, `/review`...) live in a separate plugin,
+`sceneview-contrib`, because they only make sense inside a checkout of the SDK repository.
 
-### Contributing to SceneView
-
-Run `/sceneview:contribute` to walk through the full contribution flow — codebase reading, change scoping, review, documentation, PR opening. Use `/sceneview:review` and `/sceneview:test` for pre-PR validation, and `/sceneview:release` to cut a coordinated multi-platform release (Maven Central + npm + SPM + GitHub Release).
-
-## Platforms supported by SceneView
-
-| Platform | Renderer | Framework |
-|---|---|---|
-| Android | Filament | Jetpack Compose |
-| iOS / macOS / visionOS | RealityKit | SwiftUI |
-| Web | Filament.js (WASM) | Kotlin/JS |
-| Flutter | Native bridge | PlatformView |
-| React Native | Native bridge | Fabric |
+**Upgrading from 4.0.x:** those commands and the reminder hooks used to ship in this plugin as
+`/sceneview:*`. They are now `/sceneview-contrib:*`, installed with
+`/plugin install sceneview-contrib@sceneview`.
 
 ## Links
 
 - Docs: https://sceneview.github.io
 - API reference: https://github.com/sceneview/sceneview/blob/main/llms.txt
 - Issues: https://github.com/sceneview/sceneview/issues
-- Sponsor: https://github.com/sponsors/sceneview
+- Support the project: https://opencollective.com/sceneview
 
 ## License
 
-MIT
+Apache-2.0. The bundled `sceneview-mcp` npm package is MIT.

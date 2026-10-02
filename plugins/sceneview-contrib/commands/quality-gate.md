@@ -8,19 +8,22 @@ Run this BEFORE every push to ensure nothing is broken across ALL platforms.
 
 ---
 
+There is no single gate script (the old `quality-gate.sh` was removed in
+sceneview#3244): run the steps below in order and report each one as PASS, WARN
+or FAIL.
+
 ## Quick mode
 
-For fast checks (version sync, security, code quality — no build/test):
+For fast checks (git state, version sync, changelog fragments, security, code
+quality — sections 1 to 4 and 6, no build/test):
 ```bash
-bash .claude/scripts/quality-gate.sh --quick
+bash .claude/scripts/sync-versions.sh
+bash .claude/scripts/check-changelog-fragments.sh
 ```
 
 ## Full mode (default)
 
-Runs everything including build and tests:
-```bash
-bash .claude/scripts/quality-gate.sh
-```
+Quick mode, then section 5 (build and tests).
 
 ## What it checks
 

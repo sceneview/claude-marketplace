@@ -1,0 +1,18 @@
+{
+  "name": "sceneview-contrib",
+  "version": "1.0.0",
+  "description": "For contributors to the sceneview/sceneview repository only: commands for reviewing, testing, documenting, version-bumping and releasing the SDK, plus reminder hooks for cross-platform API parity. Not needed to build apps with SceneView; install the sceneview plugin for that.",
+  "author": {
+    "name": "SceneView",
+    "url": "https://github.com/sceneview"
+  },
+  "homepage": "https://github.com/sceneview/sceneview/blob/main/CONTRIBUTING.md",
+  "repository": "https://github.com/sceneview/sceneview",
+  "license": "Apache-2.0",
+  "keywords": [
+    "sceneview",
+    "contributing",
+    "release",
+    "maintainer"
+  ]
+}

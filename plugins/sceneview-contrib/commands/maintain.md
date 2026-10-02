@@ -97,9 +97,10 @@ If a newer stable version exists, note it for a potential PR.
 
 ## 6. Cross-platform API parity
 
-```bash
-bash .claude/scripts/cross-platform-check.sh
-```
+Compare the public node types and composables in `sceneview/src/` and
+`arsceneview/src/` with `SceneViewSwift/Sources/` and `sceneview-web/src/`.
+For the demo catalogues, `parity-manifest.yml` at the repo root is the
+Android ↔ iOS ledger and `bash .claude/scripts/check-demo-id-parity.sh` checks it.
 
 Check:
 - Android node types vs iOS node types
