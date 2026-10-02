@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# sync-plugin-versions.sh — Verify each Claude Code plugin's manifest
-# version matches the npm-published version of the MCP it wraps.
+# sync-plugin-versions.sh — Verify the sceneview plugin's manifest version
+# matches the npm-published version of the MCP it wraps, and that its skills
+# match agents/ in sceneview/sceneview.
 #
-# This marketplace ships ONE plugin (sceneview): the org publishes only what it
-# maintains, so nothing unrelated to SceneView belongs here. The plugin tracks the
+# This marketplace ships only SceneView plugins (sceneview, sceneview-contrib):
+# the org publishes only what it maintains. The sceneview plugin tracks the
 # wrapped `sceneview-mcp` npm package version, NOT the SDK gradle.properties
 # VERSION_NAME.
 #
@@ -12,8 +13,9 @@
 #   bash scripts/sync-plugin-versions.sh --fix     # auto-bump plugin.json + marketplace.json
 #                                                  # and refresh the skill copies
 #
-# It also checks plugins/sceneview/skills/ against agents/ in sceneview/sceneview.
 # The sceneview-contrib plugin wraps no npm package and is versioned by hand.
+# SCENEVIEW_SRC=<checkout> compares the skills against a local checkout instead
+# of a shallow clone of GitHub main.
 #
 # Exit codes:
 #   0 = plugin aligned with its wrapped npm package and skill sources
@@ -37,8 +39,8 @@ echo -e "${CYAN}=== Plugin ↔ npm version sync ===${NC}"
 echo ""
 
 # Mapping: plugin folder | wrapped npm package name
-# This marketplace ships ONE plugin (sceneview). Off-topic personal-portfolio
-# MCPs live in their own orgs and have their own marketplaces — never here.
+# Only sceneview wraps an npm package. Off-topic personal-portfolio MCPs live
+# in their own orgs and have their own marketplaces — never here.
 PLUGINS=(
     "sceneview|sceneview-mcp"
 )
@@ -115,37 +117,56 @@ done
 # SCENEVIEW_SRC to a local checkout to compare against that instead of GitHub.
 echo ""
 echo -e "${CYAN}=== Skills ↔ sceneview/sceneview agents/ ===${NC}"
-SKILLS=(sceneview sceneview-ios sceneview-web)
 SKILLS_DIR="$REPO_ROOT/plugins/sceneview/skills"
 SRC="${SCENEVIEW_SRC:-}"
-TMP_SRC=""
-if [ -z "$SRC" ]; then
+if [ -n "$SRC" ]; then
+    if [ ! -d "$SRC/agents" ]; then
+        echo -e "  ${RED}FATAL${NC}  SCENEVIEW_SRC=$SRC has no agents/ directory"
+        exit 2
+    fi
+else
     TMP_SRC="$(mktemp -d)"
     trap 'rm -rf "$TMP_SRC"' EXIT
     if git clone -q --depth 1 --filter=blob:none --sparse \
             https://github.com/sceneview/sceneview.git "$TMP_SRC/sv" 2>/dev/null \
-        && git -C "$TMP_SRC/sv" sparse-checkout set agents 2>/dev/null; then
+        && git -C "$TMP_SRC/sv" sparse-checkout set agents 2>/dev/null \
+        && [ -d "$TMP_SRC/sv/agents" ]; then
         SRC="$TMP_SRC/sv"
+    elif [ -n "${CI:-}" ]; then
+        # In CI a silent skip would turn the job green without checking anything.
+        echo -e "  ${RED}FATAL${NC}  could not fetch sceneview/sceneview agents/"
+        exit 2
+    else
+        echo -e "  ${YELLOW}SKIP${NC}  could not fetch sceneview/sceneview agents/ (network?)"
     fi
 fi
-if [ -z "$SRC" ] || [ ! -d "$SRC/agents" ]; then
-    echo -e "  ${YELLOW}SKIP${NC}  could not fetch sceneview/sceneview agents/ (network?)"
-else
-    for skill in "${SKILLS[@]}"; do
+if [ -n "$SRC" ]; then
+    # A skill is a directory of agents/ holding a SKILL.md, on either side.
+    upstream=$(cd "$SRC/agents" && for d in */; do if [ -f "$d/SKILL.md" ]; then echo "${d%/}"; fi; done | sort)
+    local_skills=$( (cd "$SKILLS_DIR" 2>/dev/null && for d in */; do if [ -f "$d/SKILL.md" ]; then echo "${d%/}"; fi; done) | sort || true)
+    for skill in $(printf '%s\n%s\n' "$upstream" "$local_skills" | sort -u); do
         label=$(printf '  %-18s' "$skill")
-        # SKILL.md + references/ only: agents/<skill>/agents/openai.yaml is
-        # Codex display metadata and does not belong in a Claude Code plugin.
-        if diff -rq "$SRC/agents/$skill/SKILL.md" "$SKILLS_DIR/$skill/SKILL.md" >/dev/null 2>&1 \
-            && diff -rq "$SRC/agents/$skill/references" "$SKILLS_DIR/$skill/references" >/dev/null 2>&1; then
+        if ! grep -qx "$skill" <<<"$upstream"; then
+            ERRORS=$((ERRORS + 1))
+            echo -e "${label}${RED}GONE${NC} from agents/ upstream"
+            if [ "$FIX_MODE" = "--fix" ]; then
+                rm -rf "${SKILLS_DIR:?}/$skill"
+                echo "  fixed: plugins/sceneview/skills/$skill removed"
+            fi
+            continue
+        fi
+        # Whole skill directory, except agents/<skill>/agents/openai.yaml: that
+        # is Codex display metadata and does not belong in a Claude Code plugin.
+        if diff -rq --exclude=agents "$SRC/agents/$skill" "$SKILLS_DIR/$skill" >/dev/null 2>&1; then
             echo -e "${label}${GREEN}OK${NC}"
         else
             ERRORS=$((ERRORS + 1))
             echo -e "${label}${RED}DRIFT${NC} from agents/$skill"
             if [ "$FIX_MODE" = "--fix" ]; then
                 rm -rf "${SKILLS_DIR:?}/$skill"
-                mkdir -p "$SKILLS_DIR/$skill"
-                cp "$SRC/agents/$skill/SKILL.md" "$SKILLS_DIR/$skill/"
-                cp -R "$SRC/agents/$skill/references" "$SKILLS_DIR/$skill/"
+                mkdir -p "$SKILLS_DIR"
+                cp -R "$SRC/agents/$skill" "$SKILLS_DIR/$skill"
+                rm -rf "${SKILLS_DIR:?}/$skill/agents"
                 echo "  fixed: plugins/sceneview/skills/$skill refreshed"
             fi
         fi
@@ -154,14 +175,14 @@ fi
 
 echo ""
 if [ $ERRORS -eq 0 ]; then
-    echo -e "${GREEN}All bridge plugins aligned with their wrapped npm packages and skill sources${NC}"
+    echo -e "${GREEN}Plugin versions and skills in sync${NC}"
     exit 0
 else
     if [ "$FIX_MODE" = "--fix" ]; then
         echo -e "${GREEN}Fixed $ERRORS mismatch(es). Re-run without --fix to verify.${NC}"
         exit 0
     else
-        echo -e "${RED}$ERRORS bridge plugin(s) out of sync. Run with --fix to auto-bump.${NC}"
+        echo -e "${RED}$ERRORS item(s) out of sync. Run with --fix to bump versions and refresh skills.${NC}"
         exit 1
     fi
 fi

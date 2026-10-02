@@ -32,14 +32,17 @@ orbit camera"* or *"place this model on a detected plane with ARCore"*.
 ## Where the skills come from
 
 The skills are copied from [`agents/`](https://github.com/sceneview/sceneview/tree/main/agents)
-in the SDK repository, the single source shared with the Codex plugin and the `android-cli`
-skill registry. `scripts/sync-plugin-versions.sh` in this marketplace reports any drift and
+in the SDK repository, the single source the Codex plugin also reads. `scripts/sync-plugin-versions.sh` in this marketplace reports any drift and
 `--fix` refreshes the copies.
 
 ## Contributing to SceneView itself?
 
 The maintainer commands (`/release`, `/version-bump`, `/review`...) live in a separate plugin,
 `sceneview-contrib`, because they only make sense inside a checkout of the SDK repository.
+
+**Upgrading from 4.0.x:** those commands and the reminder hooks used to ship in this plugin as
+`/sceneview:*`. They are now `/sceneview-contrib:*`, installed with
+`/plugin install sceneview-contrib@sceneview`.
 
 ## Links
 

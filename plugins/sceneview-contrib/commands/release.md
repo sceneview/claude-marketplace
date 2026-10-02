@@ -60,9 +60,7 @@ ALL checks must pass. If any mismatch, fix before proceeding.
 
 ## Step 5: Run quality gate
 
-```bash
-bash .claude/scripts/quality-gate.sh --quick
-```
+Run the quick mode of `/sceneview-contrib:quality-gate`.
 
 ## Step 6: Commit and tag
 

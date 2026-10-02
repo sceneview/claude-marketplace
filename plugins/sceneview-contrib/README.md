@@ -3,9 +3,8 @@
 For people working **on** the [SceneView](https://github.com/sceneview/sceneview) SDK repository.
 To build apps with SceneView, install the `sceneview` plugin instead.
 
-Every workflow below is also described in prose in the repository's
-[`AGENTS.md`](https://github.com/sceneview/sceneview/blob/main/AGENTS.md), so contributors using
-another assistant can ask for it by name.
+The commands are plain Markdown files in [`commands/`](commands), so a contributor using another
+assistant can point it at the same file.
 
 ## Install
 
@@ -16,7 +15,7 @@ another assistant can ask for it by name.
 
 ## Commands
 
-Run them from a checkout of `sceneview/sceneview`; they call the repository's own scripts.
+Run them from a checkout of `sceneview/sceneview`; they call the scripts in its `.claude/scripts/`.
 
 | Command | What it does |
 |---|---|

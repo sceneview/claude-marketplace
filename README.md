@@ -22,6 +22,9 @@ packaging. The equivalent setup for Codex, Gemini CLI, Cursor, Copilot and other
 | [`sceneview`](plugins/sceneview) | Anyone building an app with SceneView | The three SceneView skills (`sceneview`, `sceneview-ios`, `sceneview-web`) and the [`sceneview-mcp`](https://www.npmjs.com/package/sceneview-mcp) server |
 | [`sceneview-contrib`](plugins/sceneview-contrib) | Contributors to the SDK repository | Maintainer commands (review, test, version bump, release) and cross-platform parity reminder hooks |
 
+Up to 4.0.16, the `sceneview` plugin carried the maintainer commands as `/sceneview:*`; they
+moved to `sceneview-contrib` as `/sceneview-contrib:*`.
+
 ## How this marketplace is structured
 
 The MCP server is not vendored: the plugin's `.mcp.json` runs the npm package through `npx`.
