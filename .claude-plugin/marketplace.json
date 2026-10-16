@@ -13,7 +13,7 @@
       "name": "sceneview",
       "source": "./plugins/sceneview",
       "description": "Build 3D and AR apps with SceneView on Android, Apple platforms and the web. Three skills (sceneview, sceneview-ios, sceneview-web) plus the sceneview-mcp server.",
-      "version": "4.1.1",
+      "version": "4.1.2",
       "category": "development",
       "tags": [
         "3d",
