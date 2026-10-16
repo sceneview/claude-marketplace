@@ -56,7 +56,7 @@ For a 2D polygon extruded into a 3D mesh, use `ShapeNode(polygonPath = listOf(Po
 [`ARRecordPlaybackDemo.kt`](https://github.com/sceneview/sceneview/blob/main/samples/android-demo/src/main/java/io/github/sceneview/demo/demos/ARRecordPlaybackDemo.kt) — `val recorder = rememberARRecorder(); recorder.start(file); recorder.stop()`. To replay, pass `playbackDataset = file` to `ARSceneView`.
 
 ## Video recording (rendered scene → MP4, no MediaProjection)
-[`VideoRecordingDemo.kt`](https://github.com/sceneview/sceneview/blob/main/samples/android-demo/src/main/java/io/github/sceneview/demo/demos/VideoRecordingDemo.kt) — `val surfaceMirrorer = rememberSurfaceMirrorer(); SceneView(surfaceMirrorer = surfaceMirrorer)` (also on `ARSceneView`). Point a `MediaRecorder` (SURFACE video source, `MPEG_4`/`H264`) at the scene: `surfaceMirrorer.startMirroring(recorder.surface, width = 1280, height = 720); recorder.start()`, then `surfaceMirrorer.stopMirroring(recorder.surface); recorder.stop()`. Captures exactly what Filament renders (in AR, camera feed + virtual content composited) — never the Compose UI — with no MediaProjection consent dialog or foreground service. `startMirroring` is JNI-free / any-thread; `stopMirroring` is main-thread only. **Unlike `ARRecorder`** (which records an ARCore dataset for deterministic replay), this produces a shareable video.
+[`SceneRecorderState.kt`](https://github.com/sceneview/sceneview/blob/main/samples/android-demo/src/main/java/io/github/sceneview/demo/recording/SceneRecorderState.kt), the shared Record action of the demo app's `DemoScaffold` — `val surfaceMirrorer = rememberSurfaceMirrorer(); SceneView(surfaceMirrorer = surfaceMirrorer)` (also on `ARSceneView`). Point a `MediaRecorder` (SURFACE video source, `MPEG_4`/`H264`) at the scene: `surfaceMirrorer.startMirroring(recorder.surface, width = 1280, height = 720); recorder.start()`, then `surfaceMirrorer.stopMirroring(recorder.surface); recorder.stop()`. Captures exactly what Filament renders (in AR, camera feed + virtual content composited) — never the Compose UI — with no MediaProjection consent dialog or foreground service. `startMirroring` is JNI-free / any-thread; `stopMirroring` is main-thread only. **Unlike `ARRecorder`** (which records an ARCore dataset for deterministic replay), this produces a shareable video.
 
 ## Cross-platform parity
 
@@ -81,8 +81,8 @@ plane grid fading after first placement, and a per-model contact shadow — all 
 val bottomBarHeight = 96.dp
 
 PlacementScene(
-    coaching = true,        // animated onboarding guide while searching for a surface
-    // The coaching pill sits 16 dp above the bottom edge by default — a gutter sized for a
+    coaching = true,        // ARCoachingOverlay card while searching for a surface
+    // The coaching card sits 16 dp above the bottom edge by default — a gutter sized for a
     // screen whose bottom is empty. Under a dock, a nav bar or a product sheet it lands
     // behind that chrome; name the band it must clear instead (#3735). Omit on a bare screen.
     coachingBottomClearance = bottomBarHeight + 8.dp,
