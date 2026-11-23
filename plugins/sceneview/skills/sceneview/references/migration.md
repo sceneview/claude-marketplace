@@ -13,8 +13,8 @@ often need to rewrite.
 | `Scene { … }` | `SceneView { … }` |
 | `ArScene { … }` | `ARSceneView { … }` |
 
-Artifacts unchanged: `io.github.sceneview:sceneview:4.57.0` for 3D-only,
-`io.github.sceneview:arsceneview:4.57.0` for AR.
+Artifacts unchanged: `io.github.sceneview:sceneview:4.72.0` for 3D-only,
+`io.github.sceneview:arsceneview:4.72.0` for AR.
 
 ## Model loading
 
@@ -35,7 +35,7 @@ helmet?.let { ModelNode(modelInstance = it, scaleToUnits = 0.3f) }
 | Old | New |
 | --- | --- |
 | Imperative `scene.addChild(node)` | Children are declared inside the parent's trailing lambda |
-| `rememberNodes()` / `rememberChildNodes()` | Removed |
+| `rememberNodes()` / `rememberChildNodes()` | `rememberNodes` is deprecated and compiles with a warning (2.x compatibility only, with `Scene(childNodes = …)` / `ARScene(childNodes = …)`); `rememberChildNodes` is removed. Write the 4.x form: declare the nodes in the `SceneView { }` / `ARSceneView { }` block |
 | Manual collision wiring | `rememberCollisionSystem(view)` — already the default `collisionSystem` parameter of `SceneView` / `ARSceneView`; use `collisionSystem.hitTest(...)` |
 
 ## AR
@@ -123,7 +123,9 @@ APIs are `@ExperimentalSceneViewApi`.
    `AugmentedImageNode`, `AugmentedFaceNode`, or
    `AnchorNode(anchor = hit.createAnchor())` from a plane hit-test.
 
-## Apple parity
+## Apple parity — end of life at 4.68.0
+
+**End of life:** SceneViewSwift, Flutter and React Native: **4.68.0 (November 2026)** is the last release. No new releases. See [DEPRECATION.md](https://github.com/sceneview/sceneview/blob/main/DEPRECATION.md).
 
 `SceneViewSwift` mirrors the entrypoints (`SceneView { }`, `ARSceneView { }`)
 but uses SwiftUI's `@NodeBuilder` result-builder and modifier-style

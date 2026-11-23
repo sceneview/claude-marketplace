@@ -141,8 +141,12 @@ else
     fi
 fi
 if [ -n "$SRC" ]; then
+    # Skills of agents/ this plugin does not ship. sceneview-ios documents
+    # SceneViewSwift, end of life at 4.68.0 (DEPRECATION.md in the SDK repo):
+    # it stays in agents/ for existing apps but is not offered to new ones.
+    NOT_SHIPPED="sceneview-ios"
     # A skill is a directory of agents/ holding a SKILL.md, on either side.
-    upstream=$(cd "$SRC/agents" && for d in */; do if [ -f "$d/SKILL.md" ]; then echo "${d%/}"; fi; done | sort)
+    upstream=$(cd "$SRC/agents" && for d in */; do if [ -f "$d/SKILL.md" ]; then echo "${d%/}"; fi; done | grep -vxF -f <(tr ' ' '\n' <<<"$NOT_SHIPPED") | sort || true)
     local_skills=$( (cd "$SKILLS_DIR" 2>/dev/null && for d in */; do if [ -f "$d/SKILL.md" ]; then echo "${d%/}"; fi; done) | sort || true)
     for skill in $(printf '%s\n%s\n' "$upstream" "$local_skills" | sort -u); do
         label=$(printf '  %-18s' "$skill")

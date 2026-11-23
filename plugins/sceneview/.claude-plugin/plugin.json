@@ -1,7 +1,7 @@
 {
   "name": "sceneview",
-  "version": "4.1.2",
-  "description": "Build 3D and AR apps with the SceneView SDK: Jetpack Compose + Filament + ARCore, SwiftUI + RealityKit (iOS, macOS, visionOS), and Filament.js + WebXR on the web. Three skills (sceneview, sceneview-ios, sceneview-web) plus the sceneview-mcp server.",
+  "version": "4.2.0",
+  "description": "Build 3D and AR apps with SceneView: Jetpack Compose + Filament + ARCore on Android, and Filament.js + WebXR on the web. Two skills (sceneview, sceneview-web) plus the sceneview-mcp server.",
   "author": {
     "name": "SceneView",
     "url": "https://github.com/sceneview"
@@ -14,18 +14,12 @@
     "3d",
     "ar",
     "arcore",
-    "arkit",
     "android",
-    "ios",
-    "visionos",
     "web",
     "webxr",
     "filament",
-    "realitykit",
     "jetpack-compose",
-    "swiftui",
     "gltf",
-    "usdz",
     "mcp"
   ]
 }

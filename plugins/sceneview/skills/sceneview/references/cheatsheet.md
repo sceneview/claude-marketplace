@@ -8,8 +8,8 @@ doubt **read the demo, do not improvise**.
 
 | Composable | Artifact | Demo |
 | --- | --- | --- |
-| `SceneView { … }` | `io.github.sceneview:sceneview:4.57.0` | `ModelViewerDemo.kt` |
-| `ARSceneView { … }` | `io.github.sceneview:arsceneview:4.57.0` | `ARPlacementDemo.kt` |
+| `SceneView { … }` | `io.github.sceneview:sceneview:4.72.0` | `ModelViewerDemo.kt` |
+| `ARSceneView { … }` | `io.github.sceneview:arsceneview:4.72.0` | `ARPlacementDemo.kt` |
 
 ## `SceneView` parameters (most common)
 
@@ -30,7 +30,7 @@ SceneView(
     renderQuality = RenderQuality.Default,              // Cinematic / Default / Performance
     onGestureListener = rememberOnGestureListener(/* … */),
     onFrame = { frameTimeNanos -> /* … */ },
-    surfaceMirrorer = rememberSurfaceMirrorer(),        // optional: record the rendered scene to MP4 in-app (no MediaProjection). Also on ARSceneView
+    surfaceMirrorer = rememberSurfaceMirrorer(),        // optional: photo / MP4 of the rendered scene in-app — pass rememberSceneRecorder().surfaceMirrorer. Also on ARSceneView
 ) { /* SceneScope content */ }
 ```
 
@@ -103,10 +103,11 @@ iOS: coaching overlay = `ARSceneView(showCoachingOverlay: true)` (native); retic
 | `rememberModelInstance(modelLoader, "asset.glb")` | `ModelInstance?` | **Nullable while loading**. Takes `.glb`, `.gltf` or `.3mf` — asset path, URL, or a `file://` / `content://` URI shared in from another app |
 | `rememberMainLightNode(engine) { … }` | `LightNode` | Default key light (use `null` to disable) |
 | `rememberFillLightNode(engine) { … }` | `LightNode` | Default fill (use `null` to disable) |
-| `rememberCameraManipulator(orbitRadius = 2.5f)` | `CameraGestureDetector.CameraManipulator?` | Orbit/pan controller, camera `orbitRadius` m from the target; `null` to lock. `orbitHomePosition = Position(…)` for an explicit eye (no "home" gesture exists despite the name) |
+| `rememberCameraManipulator(orbitRadius = 2.5f)` | `CameraGestureDetector.CameraManipulator?` | Orbit/pan controller, camera `orbitRadius` m from the target; `null` to lock. `orbitHomePosition = Position(…)` for an explicit eye (no built-in "home" gesture: `key = resets` rebuilds it there, see llms.txt) |
 | `rememberOnGestureListener(onSingleTapConfirmed = …)` | `GestureDetector.OnGestureListener` | Wire AR taps |
 | `rememberARRecorder()` | `ARRecorder` | Record/replay AR sessions — ARCore **dataset** for deterministic replay (no args) |
-| `rememberSurfaceMirrorer()` | `SurfaceMirrorer` | Record the **rendered scene** to MP4 in-app (no MediaProjection). Pass to `SceneView`/`ARSceneView(surfaceMirrorer = …)`, then `startMirroring(surface)` / `stopMirroring(surface)` |
+| `rememberSceneRecorder()` | `SceneRecorder` | **Photo** (`savePhoto()`, full-res JPEG/PNG) and **MP4** (`startRecording(settings = VideoSettings(…))` / `stopRecording()`, 1080p30, optional mic, time limit, `overlay` watermark) of the rendered scene, in-app (no MediaProjection). Pass `recorder.surfaceMirrorer` to `SceneView`/`ARSceneView` |
+| `rememberSurfaceMirrorer()` | `SurfaceMirrorer` | Lower level: mirror the **rendered scene** to your own encoder surface (no MediaProjection). Pass to `SceneView`/`ARSceneView(surfaceMirrorer = …)`, then `startMirroring(surface)` / `stopMirroring(surface)` |
 
 ## Common 3D nodes
 
@@ -115,14 +116,14 @@ iOS: coaching overlay = `ARSceneView(showCoachingOverlay: true)` (native); retic
 | `ModelNode(modelInstance, scaleToUnits, centerOrigin, isEditable)` | `ModelViewerDemo.kt` | Render a GLB. `isEditable = true` enables drag/scale/rotate |
 | `LightNode(type, intensity, direction, position, color, apply = { … })` | `LightingDemo.kt` | `type` is `LightManager.Type.POINT / SPOT / DIRECTIONAL / FOCUSED_SPOT / SUN` |
 | `CubeNode / SphereNode / CylinderNode / PlaneNode / CapsuleNode / TorusNode / ConeNode` | `GeometryDemo.kt`, `LightingDemo.kt` (Sphere) | Each takes `materialInstance` and shape-specific dimensions (e.g. `SphereNode(radius, ...)`) |
-| `BillboardNode` | `ARMLObjectLabelDemo.kt` | Always faces the camera — but ONLY when handed a `cameraPositionProvider`. Without one it never turns. Full look-at (yaw + pitch, no roll); the provider follows recomposition |
-| `ImageNode` | `ARImageDemo.kt`, `LightingLabDemo.kt` | 2D image quad. `size = null` normalises the bitmap's longest edge to 1 unit |
+| `BillboardNode` | `PointAndAskDemo.kt` | Always faces the camera — but ONLY when handed a `cameraPositionProvider`. Without one it never turns. Full look-at (yaw + pitch, no roll); the provider follows recomposition |
+| `ImageNode` | `ARImageDemo.kt`, `TwoDInThreeDDemo.kt` | 2D image quad. `size = null` normalises the bitmap's longest edge to 1 unit |
 | `TextNode` | `ARMeasureDemo.kt` | 3D text. Uses `widthMeters` / `heightMeters`, NOT `scaleToUnits`. Billboards only with a `cameraPositionProvider`, same as `BillboardNode` |
 | `ViewNode` | `TwoDInThreeDDemo.kt`, `PickingAndCollisionDemo.kt` | Embeds a Compose UI inside 3D. Requires `viewNodeWindowManager` on the `SceneView`, an explicit content size, and the theme re-applied inside (it inherits no `CompositionLocal`). Interactive since #2845: `Button.onClick` fires. A `Surface`/`Card` consumes the touch even when nothing inside is clickable, and a consumed touch never reaches `onSingleTapUp` — opt out per node with `isTouchForwardingEnabled = false`. Always-on-top = `materialInstance.setDepthCulling(false)` **and** `setPriority(PRIORITY_LAST)`. Faces the camera with `cameraPositionProvider = { cameraNode.worldPosition }`, same parameter and meaning as `BillboardNode` / `TextNode`; `rotation` is ignored while it is set |
 | `TubeNode(points, radius, closed, caps)` | `LinesPathsDemo.kt` | A polyline with a **real width** — the one to reach for. Sweeps a cross-section of `radius` metres along `points` |
 | `LineNode / PathNode` | — | `PrimitiveType.LINES`: a 1-device-pixel hairline with no width control, invisible at phone density (#3397). Debug gizmos only — use `TubeNode` for anything a user sees |
 | `PhysicsNode(node, mass, restitution, …)` | `RollingBallsDemo.kt` | Wraps an existing node; experimental (the Rolling Balls demo) |
-| `ReflectionProbeNode` | `LightingLabDemo.kt` | Local IBL probe (Reflections tab of unified Lighting Lab demo) |
+| `ReflectionProbeNode` | `LightingDemo.kt` | Local IBL probe (the Reflections section of the Lighting demo) |
 
 For collision, use the **`rememberCollisionSystem(view)`** helper (it's already
 plumbed by default in `SceneView`'s param list above) — not a node type. See
@@ -145,7 +146,9 @@ functions on Android in v4.2. Those are iOS-only via SceneViewSwift.
 Filament JNI is main-thread-only. Use the `remember*` helpers (they handle
 this). For imperative code, use `modelLoader.loadModelInstanceAsync`.
 
-## Apple parity
+## Apple parity — end of life at 4.68.0
+
+**End of life:** SceneViewSwift, Flutter and React Native: **4.68.0 (November 2026)** is the last release. No new releases. See [DEPRECATION.md](https://github.com/sceneview/sceneview/blob/main/DEPRECATION.md).
 
 iOS / macOS / visionOS export `SceneView { }` and `ARSceneView { }` from
 the `SceneViewSwift` package with SwiftUI semantics (`@NodeBuilder`,

@@ -2,7 +2,9 @@
 
 A [Claude Code](https://code.claude.com/docs/en/plugins) plugin marketplace for
 [SceneView](https://github.com/sceneview/sceneview), the open-source 3D & AR SDK for Android
-(Jetpack Compose), iOS / macOS / visionOS (SwiftUI) and the web.
+(Jetpack Compose) and the web. SceneView for SwiftUI, Flutter and React Native reached end of life
+at 4.68.0 ([DEPRECATION.md](https://github.com/sceneview/sceneview/blob/main/DEPRECATION.md)), so
+this marketplace no longer ships the Apple skill.
 
 SceneView supports every AI assistant at the same level; this repository is the Claude Code
 packaging. The equivalent setup for Codex, Gemini CLI, Cursor, Copilot and others is on
@@ -19,7 +21,7 @@ packaging. The equivalent setup for Codex, Gemini CLI, Cursor, Copilot and other
 
 | Plugin | For | Contents |
 |---|---|---|
-| [`sceneview`](plugins/sceneview) | Anyone building an app with SceneView | The three SceneView skills (`sceneview`, `sceneview-ios`, `sceneview-web`) and the [`sceneview-mcp`](https://www.npmjs.com/package/sceneview-mcp) server |
+| [`sceneview`](plugins/sceneview) | Anyone building an app with SceneView | The two SceneView skills (`sceneview` for Android, `sceneview-web`) and the [`sceneview-mcp`](https://www.npmjs.com/package/sceneview-mcp) server |
 | [`sceneview-contrib`](plugins/sceneview-contrib) | Contributors to the SDK repository | Maintainer commands (review, test, version bump, release) and cross-platform parity reminder hooks |
 
 Up to 4.0.16, the `sceneview` plugin carried the maintainer commands as `/sceneview:*`; they
