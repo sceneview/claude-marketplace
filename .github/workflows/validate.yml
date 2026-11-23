@@ -5,11 +5,10 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
-  # The sync-versions job compares this repo against npm. npm is the side that
-  # moves; this repo can sit still for months. Without a time trigger the check
-  # structurally cannot observe the drift it exists to catch — last run was
-  # 2026-05-11, by which point the published package had gained five versions
-  # (4.0.11 here vs 4.0.16 on npm) without anything ever turning red.
+  # The sync-versions job compares this repo against the SDK repository, which
+  # is the side that moves (a release most weeks); this repo can sit still for
+  # months. Without a time trigger the check cannot observe the drift it exists
+  # to catch.
   schedule:
     - cron: "17 6 * * 1"
 
@@ -38,7 +37,7 @@ jobs:
         run: claude plugin validate plugins/sceneview-contrib
 
   sync-versions:
-    name: Plugin version ↔ npm, skills ↔ SDK agents/
+    name: Plugin version ↔ SDK release, skills ↔ SDK agents/
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -50,6 +49,6 @@ jobs:
 
       - name: Run sync-plugin-versions.sh
         run: bash scripts/sync-plugin-versions.sh
-        # Exit code 1 if the plugin manifest drifts from `npm view sceneview-mcp version`.
+        # Exit code 1 if the plugin version drifts from the SDK's VERSION_NAME or a skill drifts from agents/.
         # When this fails, run `bash scripts/sync-plugin-versions.sh --fix` locally,
         # commit the bumped plugin.json + marketplace.json, and push.

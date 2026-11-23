@@ -1,7 +1,7 @@
 {
   "name": "sceneview",
-  "version": "4.2.0",
-  "description": "Build 3D and AR apps with SceneView: Jetpack Compose + Filament + ARCore on Android, and Filament.js + WebXR on the web. Two skills (sceneview, sceneview-web) plus the sceneview-mcp server.",
+  "version": "4.72.0",
+  "description": "Build 3D and AR apps with SceneView: Jetpack Compose + Filament + ARCore on Android, and Filament.js + WebXR on the web. Two skills: sceneview (Android) and sceneview-web.",
   "author": {
     "name": "SceneView",
     "url": "https://github.com/sceneview"
@@ -19,7 +19,6 @@
     "webxr",
     "filament",
     "jetpack-compose",
-    "gltf",
-    "mcp"
+    "gltf"
   ]
 }
