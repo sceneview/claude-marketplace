@@ -5,26 +5,23 @@
     "url": "https://github.com/sceneview"
   },
   "metadata": {
-    "description": "Claude Code plugin marketplace for SceneView — the cross-platform 3D & AR SDK for Android (Jetpack Compose), iOS / macOS / visionOS (SwiftUI), and Web (Kotlin/JS).",
+    "description": "Claude Code plugin marketplace for SceneView — the open-source 3D & AR SDK for Android (Jetpack Compose) and the web.",
     "version": "1.1.0"
   },
   "plugins": [
     {
       "name": "sceneview",
       "source": "./plugins/sceneview",
-      "description": "Build 3D and AR apps with SceneView on Android, Apple platforms and the web. Three skills (sceneview, sceneview-ios, sceneview-web) plus the sceneview-mcp server.",
-      "version": "4.1.2",
+      "description": "Build 3D and AR apps with SceneView: Jetpack Compose + Filament + ARCore on Android, and Filament.js + WebXR on the web. Two skills: sceneview (Android) and sceneview-web.",
+      "version": "4.72.0",
       "category": "development",
       "tags": [
         "3d",
         "ar",
         "android",
-        "ios",
         "web",
         "filament",
-        "realitykit",
-        "jetpack-compose",
-        "swiftui"
+        "jetpack-compose"
       ]
     },
     {

@@ -1,23 +1,20 @@
 # SceneView plugin for Claude Code
 
 Build 3D and AR apps with [SceneView](https://github.com/sceneview/sceneview), the open-source
-3D & AR SDK for Android (Jetpack Compose), iOS / macOS / visionOS (SwiftUI) and the web.
+3D & AR SDK for Android (Jetpack Compose) and the web.
 
-This plugin carries the same three skills and the same MCP server that SceneView ships for every
+This plugin carries the same Android and web skills that SceneView ships for every
 other assistant (Codex, Gemini CLI, Cursor, Copilot and others): see
 [AI-assisted development](https://sceneview.github.io/docs/ai-development/) for the equivalent setup
 in each tool.
 
 ## What you get
 
-- **Three skills**, loaded when the task matches:
-  - `sceneview`: Android, Jetpack Compose + Filament + ARCore (also covers Flutter and React Native)
-  - `sceneview-ios`: SwiftUI + RealityKit on iOS, macOS and visionOS (SceneViewSwift)
+- **Two skills**, loaded when the task matches:
+  - `sceneview`: Android, Jetpack Compose + Filament + ARCore, and Compose Multiplatform desktop
   - `sceneview-web`: Filament.js (WebGL2/WASM) + WebXR in the browser
 
   Each one carries the API contract, compilable recipes, a cheatsheet and a migration guide.
-- **The `sceneview-mcp` server**, started automatically: compilable samples, platform setup
-  guides, a code validator, node references and 3D model search.
 
 ## Install
 
@@ -28,6 +25,23 @@ in each tool.
 
 Then ask for what you want to build, for example *"a Compose screen that loads a .glb with an
 orbit camera"* or *"place this model on a detected plane with ARCore"*.
+
+## MCP server
+
+This plugin ships skills only: it starts no server and sends nothing anywhere. The SceneView
+MCP server (samples, a code validator, 3D model search and `view_3d_model`) is offered
+separately, as the hosted connector at `mcp.sceneview.dev` or the
+[`sceneview-mcp`](https://www.npmjs.com/package/sceneview-mcp) npm package; see
+[AI-assisted development](https://sceneview.github.io/docs/ai-development/).
+
+## Apple, Flutter and React Native
+
+SceneView for SwiftUI (`SceneViewSwift`), Flutter and React Native reached end of life at
+**4.68.0**: published versions stay installable, with no new releases
+([DEPRECATION.md](https://github.com/sceneview/sceneview/blob/main/DEPRECATION.md)). The
+`sceneview-ios` skill is no longer part of this plugin; it stays in
+[`agents/sceneview-ios`](https://github.com/sceneview/sceneview/tree/main/agents/sceneview-ios)
+for existing apps.
 
 ## Where the skills come from
 
@@ -53,4 +67,4 @@ The maintainer commands (`/release`, `/version-bump`, `/review`...) live in a se
 
 ## License
 
-Apache-2.0. The bundled `sceneview-mcp` npm package is MIT.
+Apache-2.0.

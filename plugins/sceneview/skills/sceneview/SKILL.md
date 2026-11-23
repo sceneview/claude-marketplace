@@ -1,11 +1,11 @@
 ---
 name: sceneview
-description: Build 3D and AR apps with the SceneView SDK in Jetpack Compose, SwiftUI (iOS/macOS/visionOS via SceneViewSwift), Web (Filament.js), Flutter and React Native. Use whenever the user asks for "3D in Compose", "AR with ARCore in Compose", a model viewer, or any cross-platform 3D/AR app where the dependency is `io.github.sceneview:sceneview` / `io.github.sceneview:arsceneview` / `SceneViewSwift` / `sceneview-web` / `flutter_sceneview` / `@sceneview-sdk/react-native`. Skip for plain ARCore-SDK / Sceneform / Unity / Unreal / RealityKit-without-SceneViewSwift work.
+description: Build 3D and AR with SceneView for Android (Jetpack Compose, Filament, ARCore), web and Compose Multiplatform desktop. SwiftUI, Flutter and React Native are end of life at 4.68.0; their retained references are for existing users only. Skip Unity, Unreal and raw rendering API work.
 license: Apache-2.0
 metadata:
   author: SceneView
   source: https://github.com/sceneview/sceneview
-  last-updated: '2026-09-06'
+  last-updated: '2026-11-19'
   keywords:
   - sceneview
   - 3d
@@ -25,25 +25,28 @@ metadata:
   - visionos
 ---
 
+**End of life:** SceneView for SwiftUI (`SceneViewSwift`), Flutter (`flutter_sceneview`) and React Native (`@sceneview-sdk/react-native`). **4.68.0 (November 2026)** is the last release. No new releases. Published versions stay installable. See [DEPRECATION.md](https://github.com/sceneview/sceneview/blob/main/DEPRECATION.md).
+
+Android (Jetpack Compose), web, and Compose Multiplatform desktop are maintained. Android is Stable; web and desktop are Alpha. Do not recommend the retired packages for new code.
+
 ## What SceneView is
 
 SceneView is a declarative 3D and AR SDK. One mental model across every platform:
 
 - **Android** — `SceneView { … }` (3D) and `ARSceneView { … }` (AR) composables.
-  Filament renderer. Artifacts: `io.github.sceneview:sceneview:4.57.0` and
-  `io.github.sceneview:arsceneview:4.57.0`.
-- **Apple (iOS / macOS / visionOS)** — `SceneView { }` and `ARSceneView { }` SwiftUI
+  Filament renderer. Artifacts: `io.github.sceneview:sceneview:4.72.0` and
+  `io.github.sceneview:arsceneview:4.72.0`.
+- **Apple (iOS / macOS / visionOS), end of life at 4.68.0** — `SceneView { }` and `ARSceneView { }` SwiftUI
   views from the [`sceneview`](https://github.com/sceneview/sceneview) monorepo
-  via Swift Package Manager (tag `4.57.0`). RealityKit renderer.
-- **Compose Multiplatform** — `SceneViewer(…)`, one composable from `commonMain`
-  (`io.github.sceneview:sceneview-compose`, **unreleased**). *Viewer subset only* — model,
-  orbit camera, key light, environment, tap. **No AR, no custom materials, no
-  post-processing.** Android delegates to the Filament `SceneView { }` below; iOS needs a
-  one-time renderer registration; Desktop draws a placeholder. Reach for it only when the
-  ask is genuinely shared-source; for anything platform-specific, use the native API.
+  via Swift Package Manager (tag `4.68.0`). RealityKit renderer.
+- **Compose Multiplatform** — `SceneViewer(…)` in `commonMain`
+  (`io.github.sceneview:sceneview-compose`). Android and desktop use Filament.
+  *Viewer subset only* — model, orbit camera, key light, environment, tap.
+  **No AR, no custom materials, no post-processing.** The retained iOS host
+  requires end-of-life SceneViewSwift 4.68.0 and app-side renderer registration.
 - **Web** — `sceneview-web@4` on npm (Filament.js + WebXR).
-- **Flutter** — `flutter_sceneview` plugin (PlatformView bridge; pub.dev name since #2735, directory `flutter/sceneview_flutter/`).
-- **React Native** — `@sceneview-sdk/react-native@4` (Fabric bridge).
+- **Flutter, end of life at 4.68.0** — `flutter_sceneview` plugin (PlatformView bridge; pub.dev name since #2735, directory `flutter/sceneview_flutter/`).
+- **React Native, end of life at 4.68.0** — `@sceneview-sdk/react-native@4.68.0` (Fabric bridge).
 - **MCP** — `sceneview-mcp` on npm — gives AI agents direct API access from chat.
 
 Nodes are declared as composables / SwiftUI views inside the parent SceneView's
@@ -74,6 +77,72 @@ Trigger on any of:
 
 Skip for plain ARCore-SDK, Sceneform (deprecated), Unity, Unreal, or RealityKit
 projects that do NOT use the SceneViewSwift wrapper.
+
+## Open any 3D file — Android
+
+Use **one entry point** for every supported mesh format. Put the file under `src/main/assets/`,
+or pass a `content://`, `file://` or HTTPS location to the same helper:
+`rememberModelInstance(modelLoader, "models/part.stl", unit = ModelUnit.Millimeters)`.
+Import `io.github.sceneview.core.model.ModelUnit`. `ModelLoader.supportedFormats` contains
+`GLB`, `GLTF`, `THREE_MF`, `STL`, `OBJ`, `PLY_MESH` (`ModelFormat` in the same package).
+
+| Format | Unit used in the scene | Colours / textures | One-liner (inside a composable) |
+|---|---|---|---|
+| `.glb` | Metres, fixed by glTF | glTF materials and textures | `rememberModelInstance(modelLoader, "model.glb")` |
+| `.gltf` | Metres, fixed by glTF | glTF materials and sibling textures/buffers | `rememberModelInstance(modelLoader, "model.gltf")` |
+| `.3mf` | Declared unit → metres; Z-up → Y-up | Object/triangle colours; no textures | `rememberModelInstance(modelLoader, "print.3mf")` |
+| `.stl` (ASCII / binary) | Millimetres by default; override with `unit` | Grey mesh; no textures | `rememberModelInstance(modelLoader, "part.stl", unit = ModelUnit.Millimeters)` |
+| `.obj` | Millimetres by default; override with `unit` | Grey automatically; `ObjLoader` with an MTL resolver reads colours; no textures | `rememberModelInstance(modelLoader, "part.obj", unit = ModelUnit.Inches)` |
+| `.ply` mesh (ASCII / binary) | Millimetres by default; override with `unit` | Vertex RGBA; no textures | `rememberModelInstance(modelLoader, "scan.ply", unit = ModelUnit.Meters)` |
+
+`ModelUnit` offers `Meters`, `Centimeters`, `Millimeters`, `Inches`. It only changes unitless
+STL/OBJ/PLY meshes. GLB/glTF stay in metres and 3MF retains its declared unit even when `unit` is
+passed. **Real size:** omit `scaleToUnits` (or pass `null`), keep the default node scale of 1;
+`scaleToUnits = 1f` fits the model into a one-metre box and discards its authored size.
+
+```kotlin
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import io.github.sceneview.SceneView
+import io.github.sceneview.core.model.ModelUnit
+import io.github.sceneview.rememberEngine
+import io.github.sceneview.rememberModelInstance
+import io.github.sceneview.rememberModelLoader
+
+@Composable
+fun RealSizeStlViewer() {
+    val engine = rememberEngine()
+    val modelLoader = rememberModelLoader(engine)
+    val instance = rememberModelInstance(modelLoader, "models/part.stl", unit = ModelUnit.Millimeters)
+    SceneView(modifier = Modifier.fillMaxSize(), engine = engine, modelLoader = modelLoader) {
+        instance?.let { ModelNode(modelInstance = it, scaleToUnits = null) }
+    }
+}
+```
+
+For AR at real size, use the same instance in `PlacementScene`'s named `onPlaced` callback:
+`AnchorNode(anchor = anchor) { ModelNode(modelInstance = instance, scaleToUnits = null) }`.
+
+**Unsupported on Android:** STEP, FBX and USDZ (and unknown inputs) are refused before Filament
+parses them, with `io.github.sceneview.core.model.UnsupportedModelFormat(extension)`: thrown by
+`createModel*` and `awaitModelInstance`, so
+`rememberModelLoadState(modelLoader, location, unit = ModelUnit.Millimeters)` shows it as
+`ModelLoadState.Failed.error`. `rememberModelInstance`, the `suspend` `loadModel` /
+`loadModelInstance` / `loadInstancedModel` and the `*Async` callbacks log it and return `null`
+(or an empty instance list), as for a file a converter cannot parse.
+`ModelFormat.sniff(fileName: String?, head: ByteArray)` also recognises `PLY_SPLAT` and `SPZ`,
+but they require `SplatNode` / `SplatParser`, not mesh loading: they are excluded from
+`supportedFormats` and refused by `ModelConverter` / `ModelLoader` with the same typed error.
+
+For raw bytes in shared Kotlin code, use `ModelConverter.toGlb(bytes, format, unit)` from
+`io.github.sceneview.core.model`, after `ModelFormat.sniff(fileName, bytes)`. Recognisable bytes
+win over a wrong extension; the extension is the fallback. Supply the complete file for 3MF's
+ZIP-directory check and binary STL's length/count check. A bare `.ply` extension defaults to
+mesh; its header distinguishes Gaussian splats. GLB is returned without copying. JSON glTF is
+wrapped in a GLB JSON chunk; its resource URIs are retained and must still be resolved.
+The shared API runs on Kotlin platforms; Apple Swift and the web JavaScript APIs retain their
+own entry points and format support (see their sections below).
 
 ## Compose Multiplatform: `SceneViewer` (viewer subset, unreleased)
 
@@ -247,10 +316,10 @@ lambda — there is NO `rememberARSession()` helper, do NOT invent one.
    60 mm print is life-size and upright in AR — never add a scale factor of your own
    to "fix" it.
 
-7. **Only glTF/GLB, 3MF (Android) and USDZ (Apple) load.** STL, PLY meshes and
-   OBJ + MTL are open issues (sceneview/sceneview#3486, #3487, #3488), and 3MF is not
-   wired into `sceneview-web` yet (#3491). Say the format is not supported and name
-   the issue rather than inventing a loader for it.
+7. **Use the same model entry point for GLB/glTF, 3MF, STL, OBJ and PLY meshes on Android.**
+   The "Open any 3D file" section above lists units and limits. STEP/FBX/USDZ are refused with
+   `UnsupportedModelFormat`; Gaussian PLY/SPZ need `SplatNode`. Apple and web keep their own
+   format support; do not infer their capabilities from Android's `supportedFormats`.
 
 8. **Don't recompose-thrash the loaders.** `rememberEngine` / `rememberModelLoader`
    / `rememberMaterialLoader` / `rememberEnvironmentLoader` belong at the top of
@@ -352,8 +421,20 @@ When the user asks for a SceneView feature:
 4. **Use the `remember*` helpers** at the top of the composable. Never call
    raw constructors for `Engine` / `ModelLoader`.
 5. **Handle the `null` from `rememberModelInstance`** with `?.let { … }`.
-6. **For AR**, remind the user about `Manifest.permission.CAMERA` and the
-   `com.google.ar.core` `<meta-data>` entry.
-7. **If the user pastes 2.x / 3.x code**, point them at
+6. **For AR**, `arsceneview` already declares `Manifest.permission.CAMERA`
+   and the `com.google.ar.core` `<meta-data>` as `optional`. An AR Optional
+   app declares
+   `<uses-feature android:name="android.hardware.camera.ar" android:required="false" />`
+   and
+   `<uses-feature android:name="android.hardware.camera" android:required="false" />`.
+   An AR Required app overrides the `<meta-data>` with
+   `tools:replace="android:value"` (see `llms.txt` § *Setup*); without it the
+   manifest merger fails.
+7. **Never write the SceneView 2.x API from memory** — 2.x code may still compile,
+   with deprecation warnings, but always write the 4.x form: `Scene(childNodes = …)`
+   is `SceneView { … }`, `ARScene(childNodes = …)` is `ARSceneView { … }`, and
+   `rememberNodes` / `childNodes = listOf(…)` become `ModelNode(…)` declared inside
+   the block. **If the user pastes 2.x / 3.x code**,
+   point them at
    [`docs/docs/migration.md`](https://github.com/sceneview/sceneview/blob/main/docs/docs/migration.md)
    and the local [`references/migration.md`](./references/migration.md).

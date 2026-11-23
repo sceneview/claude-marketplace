@@ -2,7 +2,9 @@
 
 A [Claude Code](https://code.claude.com/docs/en/plugins) plugin marketplace for
 [SceneView](https://github.com/sceneview/sceneview), the open-source 3D & AR SDK for Android
-(Jetpack Compose), iOS / macOS / visionOS (SwiftUI) and the web.
+(Jetpack Compose) and the web. SceneView for SwiftUI, Flutter and React Native reached end of life
+at 4.68.0 ([DEPRECATION.md](https://github.com/sceneview/sceneview/blob/main/DEPRECATION.md)), so
+this marketplace no longer ships the Apple skill.
 
 SceneView supports every AI assistant at the same level; this repository is the Claude Code
 packaging. The equivalent setup for Codex, Gemini CLI, Cursor, Copilot and others is on
@@ -19,7 +21,7 @@ packaging. The equivalent setup for Codex, Gemini CLI, Cursor, Copilot and other
 
 | Plugin | For | Contents |
 |---|---|---|
-| [`sceneview`](plugins/sceneview) | Anyone building an app with SceneView | The three SceneView skills (`sceneview`, `sceneview-ios`, `sceneview-web`) and the [`sceneview-mcp`](https://www.npmjs.com/package/sceneview-mcp) server |
+| [`sceneview`](plugins/sceneview) | Anyone building an app with SceneView | The two SceneView skills (`sceneview` for Android, `sceneview-web`) |
 | [`sceneview-contrib`](plugins/sceneview-contrib) | Contributors to the SDK repository | Maintainer commands (review, test, version bump, release) and cross-platform parity reminder hooks |
 
 Up to 4.0.16, the `sceneview` plugin carried the maintainer commands as `/sceneview:*`; they
@@ -27,14 +29,13 @@ moved to `sceneview-contrib` as `/sceneview-contrib:*`.
 
 ## How this marketplace is structured
 
-The MCP server is not vendored: the plugin's `.mcp.json` runs the npm package through `npx`.
-The skills are copies of [`agents/`](https://github.com/sceneview/sceneview/tree/main/agents) in
+The `sceneview` plugin carries skills only. The skills are copies of [`agents/`](https://github.com/sceneview/sceneview/tree/main/agents) in
 the SDK repository, the same source the Codex plugin reads.
 
 ## Keeping it in sync
 
-The `sceneview` plugin version tracks the `sceneview-mcp` npm version, and its skills track
-`agents/` on the SDK's `main` branch:
+The `sceneview` plugin version is the SDK release its skills describe (`VERSION_NAME` in the
+SDK's `gradle.properties`), and its skills track `agents/` on the SDK's `main` branch:
 
 ```bash
 bash scripts/sync-plugin-versions.sh         # report
@@ -53,4 +54,4 @@ claude plugin validate plugins/sceneview-contrib
 
 ## License
 
-Apache-2.0 (see [`LICENSE`](LICENSE)). The `sceneview-mcp` npm package is MIT.
+Apache-2.0 (see [`LICENSE`](LICENSE)).
