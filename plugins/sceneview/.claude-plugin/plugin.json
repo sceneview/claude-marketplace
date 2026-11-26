@@ -1,6 +1,6 @@
 {
   "name": "sceneview",
-  "version": "4.72.0",
+  "version": "4.76.0",
   "description": "Build 3D and AR apps with SceneView: Jetpack Compose + Filament + ARCore on Android, and Filament.js + WebXR on the web. Two skills: sceneview (Android) and sceneview-web.",
   "author": {
     "name": "SceneView",
